@@ -34,6 +34,12 @@ In short: **the GUI does not replace iperf3** — it **starts iperf3 for you**, 
 
 ---
 
+## Download (pre-built)
+
+**Windows:** portable `.exe` and `.msi` installers, **Linux:** binary and `.deb`, are attached to **[GitHub Releases](https://github.com/ta10101/iperf3-gui/releases)** (not committed in git — only source lives on `main`).
+
+---
+
 ## Run from source
 
 **Windows**
