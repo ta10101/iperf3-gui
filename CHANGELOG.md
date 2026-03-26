@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2 — 2026-03-26
+
+### Added
+- **Debian/Ubuntu `.deb` package** via `build_deb.sh`: installs `iperf3-gui` to `/usr/bin`, desktop entry, recommends `iperf3`.
+- CI uploads the `.deb` together with the raw Linux binary.
+
 ## 1.1.1 — 2026-03-26
 
 ### Added

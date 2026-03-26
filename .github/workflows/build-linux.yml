@@ -1,6 +1,6 @@
-# Produces a Linux x86_64 single binary when you push a version tag (e.g. v1.1.0).
-# Download the artifact from the Actions run and attach it to your GitHub Release.
-name: Build Linux binary
+# Linux portable binary + Debian .deb when you push a version tag (e.g. v1.1.2).
+# Download artifacts from the Actions run and attach them to your GitHub Release.
+name: Build Linux binary and .deb
 
 on:
   push:
@@ -18,19 +18,26 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Tk and iperf3 (for sanity; not bundled)
+      - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-tk iperf3
+          sudo apt-get install -y python3-tk iperf3 dpkg-dev
 
-      - name: PyInstaller
+      - name: PyInstaller (single binary)
         run: |
           python -m pip install --upgrade pip
           pip install "pyinstaller>=6.0"
           python -m PyInstaller --noconfirm --clean --windowed --name iperf3-gui --onefile iperf3_gui.py
 
-      - name: Upload artifact
+      - name: Build .deb package
+        run: |
+          chmod +x build_deb.sh
+          ./build_deb.sh
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: iperf3-gui-${{ github.ref_name }}-linux-x86_64
-          path: dist/iperf3-gui
+          name: iperf3-gui-linux-${{ github.ref_name }}
+          path: |
+            dist/iperf3-gui
+            dist/iperf3-gui_*_amd64.deb

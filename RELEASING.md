@@ -24,15 +24,15 @@
    .\build_release.ps1
    ```
 
-6. **Linux binary**
-   - **Option A — GitHub Actions:** push the tag; workflow **Build Linux binary** produces an artifact **`iperf3-gui-vX.Y.Z-linux-x86_64`** (download from the Actions run).
-   - **Option B — local Linux:** run `./build_linux.sh` and use **`dist/iperf3-gui`**.
+6. **Linux**
+   - **GitHub Actions:** push the tag; workflow **Build Linux binary and .deb** uploads **`iperf3-gui-linux-vX.Y.Z`** containing the raw binary and **`iperf3-gui_X.Y.Z_amd64.deb`**.
+   - **Local Linux:** `./build_linux.sh` for **`dist/iperf3-gui`**, or `./build_deb.sh` for binary + **`dist/iperf3-gui_X.Y.Z_amd64.deb`**.
 
 7. **Publish** (common pattern):
    - `git push origin main` and `git push origin vX.Y.Z`
    - **GitHub → Releases → New release**, tag `vX.Y.Z`, notes from `CHANGELOG.md`, attach:
      - `dist\iperf3-gui.exe`
      - `dist\iperf3-gui-*-win64.msi`
-     - Linux **`iperf3-gui`** from the CI artifact (rename to e.g. `iperf3-gui-vX.Y.Z-linux-x86_64` for clarity if you like)
+     - From the Linux CI artifact: **`iperf3-gui`** and **`iperf3-gui_*_amd64.deb`**
 
 Do **not** commit secrets. Do **not** commit `dist/`, `build/`, or `*.spec`.

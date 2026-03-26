@@ -76,9 +76,29 @@ chmod +x build_linux.sh
 
 Produces **`dist/iperf3-gui`** (executable, no `.exe`). You need **python3-tk** installed to **run** the app (`apt install python3-tk`).
 
+## Debian/Ubuntu package (`.deb` installer)
+
+Builds the binary (if needed) and a **dpkg**-installable package:
+
+```bash
+chmod +x build_deb.sh
+./build_deb.sh
+```
+
+Install on Debian/Ubuntu (pick the file name printed by the script):
+
+```bash
+sudo apt install ./dist/iperf3-gui_*_amd64.deb
+# or: sudo dpkg -i dist/iperf3-gui_*_amd64.deb && sudo apt-get install -f
+```
+
+This installs **`/usr/bin/iperf3-gui`**, a **desktop menu** entry, and **Recommends: iperf3** (install with `sudo apt install iperf3` if you want the CLI on PATH). On **arm64** (e.g. some Chromebooks), the `.deb` is built as `_arm64.deb` when you run `build_deb.sh` on that architecture.
+
+Requires **`dpkg-deb`**: `sudo apt install dpkg-dev`.
+
 ### CI / GitHub Releases
 
-Pushing a **git tag** like `v1.1.1` runs [`.github/workflows/build-linux.yml`](.github/workflows/build-linux.yml) on **Ubuntu** and uploads a **workflow artifact** you can attach to a GitHub Release (alongside the Windows `.exe` / `.msi` built locally or on another workflow).
+Pushing a **git tag** like `v1.1.2` runs [`.github/workflows/build-linux.yml`](.github/workflows/build-linux.yml) on **Ubuntu** and uploads an artifact containing **`iperf3-gui`** and **`iperf3-gui_*_amd64.deb`** for your GitHub Release (alongside Windows `.exe` / `.msi`).
 
 ---
 

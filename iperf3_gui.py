@@ -10,7 +10,7 @@ third-party servers may change or rate-limit — use politely.
 
 from __future__ import annotations
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 import os
 import queue

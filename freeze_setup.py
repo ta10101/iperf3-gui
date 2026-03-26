@@ -41,7 +41,7 @@ executables = [
 
 setup(
     name="iperf3-gui",
-    version="1.1.1",
+    version="1.1.2",
     description="iperf3 GUI — guided and manual iperf3 for Windows",
     author="iperf3-gui",
     options={
