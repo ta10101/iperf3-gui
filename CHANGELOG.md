@@ -1,0 +1,16 @@
+# Changelog
+
+## 1.1.0 — 2026-03-26
+
+### Added
+- Guided mode: regions (Europe, North America, Asia-Pacific, Latin America), public server presets, test presets.
+- Manual mode: paste any iperf3 CLI arguments; optional stripping of a leading `iperf3` token.
+- Extra iperf3 flags in guided mode: IPv6 (`-6`), JSON (`-J`), bidirectional (`--bidir`), TCP no delay (`-N`), interval (`-i`), window (`-w`), and a free-form “Extra args” field.
+- Busy public servers: optional rotation across extra ports when the server reports busy.
+- Optional download of `iperf3.exe` (ar51an build) next to the app; PATH detection.
+- Help menu: `iperf3 --help`, open Windows Apps (uninstall), remove local downloaded `iperf3.exe`.
+- Windows packaging: `build_release.ps1` (PyInstaller portable EXE + cx_Freeze MSI), Start menu shortcut on MSI install.
+
+### Notes
+- Source distribution contains no personal paths; do not commit `dist/`, `build/`, or `*.spec`.
+- Runtime: speed tests contact third-party hosts; “Fetch iperf3” uses GitHub over HTTPS.

@@ -1,0 +1,9 @@
+build/
+build_pyinstaller/
+dist/
+dist_build/
+*.spec
+__pycache__/
+*.py[cod]
+*.egg-info/
+iperf3.exe
