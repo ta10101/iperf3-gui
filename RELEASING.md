@@ -18,14 +18,21 @@
    git tag -a vX.Y.Z -m "Release vX.Y.Z"
    ```
 
-5. **Build binaries** (on a clean machine or CI if you want zero local paths in artifacts):
+5. **Build Windows binaries** (local Windows):
 
    ```powershell
    .\build_release.ps1
    ```
 
-6. **Publish** (common pattern):
-   - Push branch and tags: `git push origin main` and `git push origin vX.Y.Z`
-   - On GitHub: **Releases → Draft a new release**, choose tag `vX.Y.Z`, paste notes from `CHANGELOG.md`, attach **`dist\iperf3-gui.exe`** and **`dist\iperf3-gui-*-win64.msi`** as release assets.
+6. **Linux binary**
+   - **Option A — GitHub Actions:** push the tag; workflow **Build Linux binary** produces an artifact **`iperf3-gui-vX.Y.Z-linux-x86_64`** (download from the Actions run).
+   - **Option B — local Linux:** run `./build_linux.sh` and use **`dist/iperf3-gui`**.
 
-Do **not** attach or commit secrets. Do **not** commit `dist/`, `build/`, or `*.spec`.
+7. **Publish** (common pattern):
+   - `git push origin main` and `git push origin vX.Y.Z`
+   - **GitHub → Releases → New release**, tag `vX.Y.Z`, notes from `CHANGELOG.md`, attach:
+     - `dist\iperf3-gui.exe`
+     - `dist\iperf3-gui-*-win64.msi`
+     - Linux **`iperf3-gui`** from the CI artifact (rename to e.g. `iperf3-gui-vX.Y.Z-linux-x86_64` for clarity if you like)
+
+Do **not** commit secrets. Do **not** commit `dist/`, `build/`, or `*.spec`.

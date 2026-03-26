@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.1 — 2026-03-26
+
+### Added
+- **Linux**: same GUI via tkinter; `iperf3` from PATH / package manager (`apt` / `dnf` / etc.).
+- **`build_linux.sh`**: local PyInstaller one-file build on Linux.
+- **GitHub Actions** (`.github/workflows/build-linux.yml`): builds `dist/iperf3-gui` on Ubuntu on each `v*` tag (artifact download for releases).
+
+### Changed
+- Help menu and “not ready” hints are platform-specific (Windows MSI vs Linux packages).
+
 ## 1.1.0 — 2026-03-26
 
 ### Added

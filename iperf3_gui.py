@@ -1,5 +1,7 @@
 """
-Simple Windows GUI for iperf3 (network throughput testing).
+Desktop GUI for iperf3: run network speed tests without typing CLI commands,
+or paste the same flags experts use (Manual mode). Works on Windows and Linux (tkinter).
+
 Requires iperf3.exe — e.g. from https://github.com/ar51an/iperf3-win-builds
 
 EU server names are curated from public lists (e.g. R0GGER/public-iperf3-servers);
@@ -8,7 +10,7 @@ third-party servers may change or rate-limit — use politely.
 
 from __future__ import annotations
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import os
 import queue
@@ -109,22 +111,28 @@ def _download_iperf3_windows(app_dir: str) -> bool:
         return False
 
 
+def _bundled_iperf3_path(app_dir: str) -> str:
+    return os.path.join(app_dir, "iperf3.exe" if sys.platform == "win32" else "iperf3")
+
+
 def resolve_iperf3_executable(app_dir: str) -> tuple[str, str, bool]:
     """
     Pick a working iperf3 before the UI runs tests.
     Returns (path for the field, short status line, verified_ok).
     """
-    bundled = os.path.join(app_dir, "iperf3.exe")
+    bundled = _bundled_iperf3_path(app_dir)
+    bundled_label = "iperf3.exe next to this app" if sys.platform == "win32" else "iperf3 next to this app"
 
     if os.path.isfile(bundled):
         if _verify_iperf3_cli(bundled):
-            return bundled, "Ready — using iperf3.exe next to this app.", True
+            return bundled, f"Ready — using {bundled_label}.", True
         try:
             os.remove(bundled)
         except OSError:
             pass
 
-    for cmd in ("iperf3.exe", "iperf3"):
+    which_names = ("iperf3.exe", "iperf3") if sys.platform == "win32" else ("iperf3",)
+    for cmd in which_names:
         found = shutil.which(cmd)
         if found and os.path.isfile(found) and _verify_iperf3_cli(found):
             return os.path.normpath(found), f"Ready — using iperf3 from PATH ({found}).", True
@@ -135,11 +143,14 @@ def resolve_iperf3_executable(app_dir: str) -> tuple[str, str, bool]:
                 return bundled, "Ready — downloaded iperf3.exe into this folder (first run).", True
 
     fallback = "iperf3"
-    return (
-        fallback,
-        "iperf3 not ready — click “Fetch iperf3” or Browse, or install: winget install ar51an.iPerf3",
-        False,
-    )
+    if sys.platform == "win32":
+        hint = 'iperf3 not ready — use “Fetch iperf3”, Browse, or: winget install ar51an.iPerf3'
+    else:
+        hint = (
+            "iperf3 not ready — install with your package manager "
+            "(e.g. sudo apt install iperf3, sudo dnf install iperf3), then restart this app."
+        )
+    return (fallback, hint, False)
 
 
 @dataclass(frozen=True)
@@ -545,12 +556,23 @@ class Iperf3GUI(tk.Tk):
         help_m = tk.Menu(mbar, tearoff=0)
         mbar.add_cascade(label="Help", menu=help_m)
         help_m.add_command(label="Show iperf3 --help", command=self._show_iperf_help)
-        help_m.add_command(label="Uninstall (open Windows Apps settings)", command=self._open_apps_settings_for_uninstall)
+        if sys.platform == "win32":
+            help_m.add_command(
+                label="Uninstall (open Windows Apps settings)",
+                command=self._open_apps_settings_for_uninstall,
+            )
+        else:
+            help_m.add_command(
+                label="Uninstalling on Linux",
+                command=self._help_uninstall_linux,
+            )
         help_m.add_separator()
-        help_m.add_command(
-            label="Remove downloaded iperf3.exe next to this app",
-            command=self._remove_bundled_iperf3_exe,
+        rm_label = (
+            "Remove downloaded iperf3.exe next to this app"
+            if sys.platform == "win32"
+            else "Remove bundled iperf3 next to this app (if present)"
         )
+        help_m.add_command(label=rm_label, command=self._remove_bundled_iperf3_exe)
 
     def _show_iperf_help(self) -> None:
         exe = self.exe_var.get().strip()
@@ -589,36 +611,58 @@ class Iperf3GUI(tk.Tk):
                 "(MSI installs register there automatically.)",
             )
 
+    def _help_uninstall_linux(self) -> None:
+        messagebox.showinfo(
+            "Uninstalling on Linux",
+            "If you use a single downloaded file, delete that file.\n\n"
+            "If you installed a .deb / package, remove it with the same tool "
+            "(e.g. sudo apt remove …).\n\n"
+            "If you use an AppImage, delete the AppImage file.",
+        )
+
     def _remove_bundled_iperf3_exe(self) -> None:
-        p = os.path.join(self._app_dir, "iperf3.exe")
+        p = _bundled_iperf3_path(self._app_dir)
+        label = "iperf3.exe" if sys.platform == "win32" else "iperf3"
         if not os.path.isfile(p):
-            messagebox.showinfo("Remove iperf3.exe", "No iperf3.exe found next to this application.")
+            messagebox.showinfo("Remove bundled copy", f"No {label} found next to this application.")
             return
         if not messagebox.askyesno(
-            "Remove iperf3.exe",
+            "Remove bundled copy",
             f"Delete this file?\n{p}",
         ):
             return
         try:
             os.remove(p)
-            self._exe_status_var.set("Removed local iperf3.exe. Use Fetch or PATH.")
-            messagebox.showinfo("Done", "iperf3.exe was removed.")
+            self._exe_status_var.set(f"Removed local {label}. Use PATH or package manager.")
+            messagebox.showinfo("Done", f"{label} was removed.")
         except OSError as e:
             messagebox.showerror("Error", str(e))
 
     def _warn_iperf3_not_ready(self) -> None:
+        if sys.platform == "win32":
+            detail = (
+                'Use “Fetch iperf3” (needs internet), Browse to iperf3.exe, '
+                "or install with:\nwinget install ar51an.iPerf3"
+            )
+        else:
+            detail = (
+                "Install iperf3 with your package manager (e.g. sudo apt install iperf3), "
+                "or set the program path to your iperf3 binary."
+            )
         messagebox.showwarning(
             "iperf3 not ready",
-            "The app could not verify iperf3 on this PC.\n\n"
-            'Use “Fetch iperf3” (needs internet), or Browse to iperf3.exe, '
-            "or install with:\nwinget install ar51an.iPerf3",
+            f"The app could not verify iperf3 on this system.\n\n{detail}",
         )
 
     def _fetch_iperf3(self) -> None:
         if sys.platform != "win32":
             messagebox.showinfo(
                 "Fetch iperf3",
-                "Automatic download is only set up for Windows.\nInstall iperf3 with your package manager.",
+                "Automatic download is only available on Windows.\n\n"
+                "On Linux, install iperf3 with your package manager, for example:\n"
+                "  Debian/Ubuntu: sudo apt install iperf3\n"
+                "  Fedora: sudo dnf install iperf3\n"
+                "  Arch: sudo pacman -S iperf3",
             )
             return
         self._exe_status_var.set("Downloading iperf3…")
@@ -891,10 +935,11 @@ class Iperf3GUI(tk.Tk):
 
         self._log(f"{self._exe_status_var.get()}\n\n")
         self._log(
-            "Choose a region and server preset (or Manual mode for raw iperf3 flags), then Run. "
-            "Help menu: full iperf3 --help, uninstall (Apps settings), remove local iperf3.exe.\n"
-            "Public servers are shared: keep tests short.\n"
-            "If you see 'server is busy', leave 'try other ports' on.\n\n"
+            "This app runs real iperf3 for you and shows the results here — so you do not have to "
+            "remember command-line flags unless you want to (use Manual mode for that).\n\n"
+            "Pick a region and server, choose a test type, then Run. "
+            "Help menu: iperf3 --help, uninstall notes, remove any bundled copy next to this app.\n"
+            "Public servers are shared: keep tests short. If you see 'server is busy', leave 'try other ports' on.\n\n"
         )
 
     def _apply_server_preset(self) -> None:
